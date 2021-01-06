@@ -39,14 +39,14 @@ int main(int argc, char *argv[])
     int iteration = 1;
     while (!stop)
     {
-        // Compute new posistions (S)
+        // Compute new positions (S)
         double *localBestPosition = new double[dimensions];
         localBestPosition[0] = processRank;
         for (int i = 1; i < dimensions; i++)
             localBestPosition[i] = 0;
-        // Compute new postisions (E)
+        // Compute new positions (E)
 
-        // Receive local best postisions (S)
+        // Receive local best positions (S)
         double *receivedBestPositions = NULL;
         if (processRank == ROOT)
             receivedBestPositions = new double[numberOfProcesses * dimensions];
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         MPI_Gather((void *)localBestPosition, dimensions, MPI_DOUBLE,
                    (void *)receivedBestPositions, dimensions, MPI_DOUBLE,
                    ROOT, MPI_COMM_WORLD);
-        // Receive local best postisions (E)
+        // Receive local best positions (E)
 
         // Find global best position
         double *computedGlobalBestPosition = new double[dimensions];
