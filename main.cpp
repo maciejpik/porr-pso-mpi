@@ -1,5 +1,6 @@
 #include "include/utils.h"
 #include "include/pso.h"
+#include "include/monteCarlo.h"
 
 #include <stdio.h>
 #include <mpi.h>
@@ -36,7 +37,8 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    runPso(dimensions, processRank, numberOfProcesses);
+    //runPso(dimensions, processRank, numberOfProcesses);
+    runMonteCarlo(dimensions, processRank, numberOfProcesses);
 
     MPI_Finalize();
 

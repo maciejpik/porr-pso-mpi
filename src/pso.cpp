@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include <mpi.h>
 
-#ifndef ROOT
-#define ROOT 0
-#endif
-
 void runPso(int dimensions, int processRank, int numberOfProcesses)
 {
     bool stop = false;
