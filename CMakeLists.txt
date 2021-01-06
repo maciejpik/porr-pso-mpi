@@ -4,6 +4,7 @@ project(PORR_MPI)
 
 find_package(MPI REQUIRED)
 
-add_executable(PORR_MPI main.cpp)
+add_executable(PORR_MPI main.cpp
+    include/utils.h src/utils.cpp)
 
 target_link_libraries(PORR_MPI PRIVATE MPI::MPI_C)
