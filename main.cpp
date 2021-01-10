@@ -1,44 +1,36 @@
 #include "include/utils.h"
+#include "include/Settings.h"
 #include "include/pso.h"
 #include "include/monteCarlo.h"
 
 #include <stdio.h>
 #include <mpi.h>
 
-#define ROOT 0
-
 int main(int argc, char *argv[])
 {
-    int particlesNumber, dimensions;
-    sscanf(argv[1], "%d", &particlesNumber);
-    sscanf(argv[2], "%d", &dimensions);
-
     MPI_Init(&argc, &argv);
+    Settings* settings = new Settings(argc, argv);
 
-    int processRank, numberOfProcesses;
-    MPI_Comm_rank(MPI_COMM_WORLD, &processRank);
-    MPI_Comm_size(MPI_COMM_WORLD, &numberOfProcesses);
-
-    if (processRank == ROOT)
+    if (settings->getProcessRank() == settings->getRoot())
     {
-        printf("[%d] Number of processes is %d\n", processRank, numberOfProcesses);
-        printf("[%d] Total %d particles with %d dimensions\n", processRank, particlesNumber,
-               dimensions);
+        printf("[%d] Number of processes is %d\n", settings->getProcessRank(), settings->getNumberOfProcesses());
+        printf("[%d] Total %d particles with %d dimensions\n", settings->getProcessRank(), settings->getNumberOfProcesses(),
+               settings->getDimensions());
     }
 
-    int localParticlesNumber = getLocalParticlesNumber(processRank, numberOfProcesses, particlesNumber);
-    printf("[%d] I will compute %d particles\n", processRank, localParticlesNumber);
+    printf("[%d] I will compute %d particles\n", settings->getProcessRank(), settings->getLocalParticlesNumber());
 
-    // for(int i = 0; i < localParticlesNumber; i++)
-    // {
-    //     printf("[%d] My local particle %3d has global Id %3d\n", processRank, i,
-    //         getGlobalParticleId(processRank, numberOfProcesses, particlesNumber, i));
-    // }
+    for(int i = 0; i < settings->getLocalParticlesNumber(); i++)
+    {
+        printf("[%d] My local particle %3d has global Id %3d\n", settings->getProcessRank(), i,
+            getGlobalParticleId(settings->getProcessRank(), settings->getNumberOfProcesses(),
+            settings->getParticlesNumber(), i));
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
     //runPso(dimensions, processRank, numberOfProcesses);
-    runMonteCarlo(dimensions, processRank, numberOfProcesses);
+    runMonteCarlo(settings->getDimensions(), settings->getProcessRank(), settings->getNumberOfProcesses());
 
     MPI_Finalize();
 

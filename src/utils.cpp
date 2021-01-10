@@ -1,14 +1,5 @@
 #include "../include/utils.h"
 
-int getLocalParticlesNumber(int processRank, int numberOfProcesses, int particlesNumber)
-{
-    int localParticlesNumber = particlesNumber / numberOfProcesses;
-    if (processRank < particlesNumber % numberOfProcesses)
-        return localParticlesNumber + 1;
-    else
-        return localParticlesNumber;
-}
-
 int getGlobalParticleId(int processRank, int numberOfProcesses, int particlesNumber, int localIndex)
 {
     int globalIdFirst = 0;
