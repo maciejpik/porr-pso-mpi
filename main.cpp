@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
     }
     sscanf(argv[1], "%d", &particlesNumber);
     sscanf(argv[2], "%d", &dimensions);
-    sscanf(argv[2], "%d", &stopCriterion);
-    config=new ConfigEx2();
+    sscanf(argv[3], "%f", &stopCriterion);
+    config=new ConfigEx1();
     MPI_Init(&argc, &argv);
 
     int processRank, numberOfProcesses;

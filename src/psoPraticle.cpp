@@ -17,6 +17,8 @@ psoParticle::psoParticle(int dim,OptimizationExercisesConfig* config) {
     this->config=config;
     positionVectors.resize(dim);
     positionVectorsParticlePbest.resize(dim);
+    speedVectors.resize(dim);
+    tempSpeedVectors.resize(dim);
 };
 
 psoParticle::~psoParticle(){
@@ -39,12 +41,12 @@ void psoParticle::setStartPosition(std::default_random_engine &gen)
 
 void psoParticle::setStartSpeed(std::default_random_engine &gen)
 {
-    std::uniform_real_distribution<double> unif(
-            (config->lowerLimitPositionVector - config->upperLimitPositionVector),
-            (config->upperLimitPositionVector - config->lowerLimitPositionVector));
+    std::uniform_real_distribution<double> unif(0.0,1.0);
+            //(config->lowerLimitPositionVector - config->upperLimitPositionVector),
+            //(config->upperLimitPositionVector - config->lowerLimitPositionVector));
     for (int i = 0; i < dimensions; i++)
     {
-        speedVectors[i] = unif(gen);
+        speedVectors[i] = unif(gen)/160;
     }
 }
 
@@ -93,12 +95,12 @@ void psoParticle::computePosition(std::default_random_engine *gen)
 {
     std::vector<double> newPositionVector(dimensions);
 
-    while(!config->isPositionInRange(newPositionVector)) {
+    do  {
         computeSpeed(gen);
         for (int i = 0; i < dimensions; i++) {
             newPositionVector[i] = positionVectors[i] + tempSpeedVectors[i];
         }
-    }
+    } while(!config->isPositionInRange(newPositionVector));
 
     speedVectors = tempSpeedVectors;
     positionVectors = newPositionVector;

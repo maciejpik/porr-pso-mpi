@@ -12,11 +12,14 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
     std::vector<psoParticle *> particles;
     std::default_random_engine rand_engine;
     psoParticle *localBestParticle;
+    particles.resize(numberOfParticles / numberOfProcesses);
     rand_engine.seed(time(NULL));
     for (int i = 0; i < numberOfParticles / numberOfProcesses; i++) {
         psoParticle *particle = new psoParticle(dimensions,config);
         particle->setStartPosition(rand_engine);
         particle->setStartSpeed(rand_engine);
+        particle->computeCostFunctionValue();
+        printf("[%d] current cost %f, start\n", processRank, particle->getCostFunctionValue());
         particles[i] = particle;
     }
     localBestParticle = particles[0];
@@ -30,6 +33,7 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
             if (ps->getCostFunctionValue() < localBestParticle->getCostFunctionValue()) {
                 localBestParticle = ps;
             }
+            printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
 
         }
 
@@ -72,10 +76,12 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
                     globalBestPosCost = cCost;
                     computedGlobalBestPosition = receivedBestPositions + i;
                 }
+               // printf("[%d] current cost %f, iteration %d\n", processRank, cCost, iteration);
             }
             // Compute stop criterion
             if (globalBestPosCost < stopCriterionValue)
                 stop = true;
+            printf("[%d] current global best pos cost %f, iteration %d\n", processRank, globalBestPosCost, iteration);
         }
 
         // Broadcast global best position
