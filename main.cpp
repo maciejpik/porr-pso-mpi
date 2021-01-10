@@ -3,6 +3,7 @@
 #include "include/monteCarlo.h"
 
 #include <stdio.h>
+#include <iostream>
 #include <mpi.h>
 
 #define ROOT 0
@@ -10,6 +11,10 @@
 int main(int argc, char *argv[])
 {
     int particlesNumber, dimensions;
+    if (argc<2) {
+        std::cout<<"Missing arguments"<<std::endl;
+        exit(2);
+    }
     sscanf(argv[1], "%d", &particlesNumber);
     sscanf(argv[2], "%d", &dimensions);
 
@@ -37,8 +42,8 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    //runPso(dimensions, processRank, numberOfProcesses);
-    runMonteCarlo(dimensions, processRank, numberOfProcesses);
+    runPso(dimensions, processRank, numberOfProcesses, particlesNumber);
+    //runMonteCarlo(dimensions, processRank, numberOfProcesses);
 
     MPI_Finalize();
 
