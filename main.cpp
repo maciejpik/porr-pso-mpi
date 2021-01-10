@@ -1,7 +1,8 @@
 #include "include/utils.h"
 #include "include/pso.h"
-#include "include/monteCarlo.h"
 
+#include "include/ConfigEx1.h"
+#include "include/ConfigEx2.h"
 #include <stdio.h>
 #include <iostream>
 #include <mpi.h>
@@ -10,14 +11,17 @@
 
 int main(int argc, char *argv[])
 {
+    OptimizationExercisesConfig* config;
     int particlesNumber, dimensions;
+    float stopCriterion;
     if (argc<2) {
         std::cout<<"Missing arguments"<<std::endl;
         exit(2);
     }
     sscanf(argv[1], "%d", &particlesNumber);
     sscanf(argv[2], "%d", &dimensions);
-
+    sscanf(argv[2], "%d", &stopCriterion);
+    config=new ConfigEx2();
     MPI_Init(&argc, &argv);
 
     int processRank, numberOfProcesses;
@@ -42,7 +46,7 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    runPso(dimensions, processRank, numberOfProcesses, particlesNumber);
+    runPso(dimensions, processRank, numberOfProcesses, particlesNumber, stopCriterion,config);
     //runMonteCarlo(dimensions, processRank, numberOfProcesses);
 
     MPI_Finalize();

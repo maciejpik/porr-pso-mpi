@@ -12,6 +12,6 @@ add_executable(PORR_MPI main.cpp
     include/OptimizationExercisesConfig.h src/OptimizationExercisesConfig.cpp
     include/ConfigEx1.h src/ConfigEx1.cpp
     include/ConfigEx2.h src/ConfigEx2.cpp
-        include/PositionVectorOperator.h src/PositionVectorOperator.cpp)
+        )
 
 target_link_libraries(PORR_MPI PRIVATE MPI::MPI_C)

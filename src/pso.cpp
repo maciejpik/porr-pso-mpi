@@ -3,28 +3,31 @@
 
 #include <stdio.h>
 #include <mpi.h>
+#include <vector>
+#include <float.h>
 
-void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterion)
-{
+void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config) {
     bool stop = false;
     int iteration = 1;
-
+    std::vector<psoParticle *> particles;
     std::default_random_engine rand_engine;
+    psoParticle *localBestParticle;
     rand_engine.seed(time(NULL));
-    for (int i = 0; i < numberOfParticles/numberOfProcesses; i++) {
-        psoParticle particle;
-        particle.setStartPosition(rand_engine);
+    for (int i = 0; i < numberOfParticles / numberOfProcesses; i++) {
+        psoParticle *particle = new psoParticle(dimensions,config);
+        particle->setStartPosition(rand_engine);
+        particle->setStartSpeed(rand_engine);
         particles[i] = particle;
     }
+    localBestParticle = particles[0];
 
     while (!stop) {
         // Compute new positions (S)
         //wylicz nowa pozycje dka watku
-        for (psoParticle ps : particles) {
-            ps.computeSpeed();
-            ps.computePosition();
-            ps.computeCostFunctionValue();
-            if (ps.getCostFunctionValue() < localBestParticle.getCostFunctionValue()) {
+        for (psoParticle *ps : particles) {
+            ps->computePosition(&rand_engine);
+            ps->computeCostFunctionValue();
+            if (ps->getCostFunctionValue() < localBestParticle->getCostFunctionValue()) {
                 localBestParticle = ps;
             }
 
@@ -32,15 +35,15 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
 
         double *localBestPosition = new double[dimensions];
         for (int i = 0; i < dimensions; i++) {
-            localBestPosition[i] = localBestParticle.getPositionVector()[i];
+            localBestPosition[i] = localBestParticle->getPositionVector()[i];
         }
 
 
-        //wypisz tu najlepsza pozycje localna
+/*        //wypisz tu najlepsza pozycje localna
         localBestPosition[0] = processRank;
         for (int i = 1; i < dimensions; i++)
             localBestPosition[i] = 0;
-        // Compute new positions (E)
+        // Compute new positions (E)*/
 
         // Receive local best positions (S)
         double *receivedBestPositions = NULL;
@@ -55,30 +58,39 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
 
 
 
-        double *computedGlobalBestPosition = new double[dimensions];
-        computedGlobalBestPosition = receivedBestPositions[0];
-        for (int i = 0; i < numberOfProcesses * dimensions; i++) {
-        if (config->computeCostFunctionValue(receivedBestPositions[i]) <
-            config->computeCostFunctionValue(computedGlobalBestPosition)) {
-            computedGlobalBestPosition = receivedBestPositions[i];
-        }
-    }
-        if (processRank == ROOT)
-        {
-            for (int i = 0; i < dimensions; i++)
-                computedGlobalBestPosition[i] = -1;
+        double *computedGlobalBestPosition;
+        //computedGlobalBestPosition = receivedBestPositions[0];
+        double globalBestPosCost = DBL_MAX;
+        if (processRank == ROOT) {
+            for (int i = 0; i < numberOfProcesses * dimensions; i = i + dimensions) {
+                std::vector<double> positionVectors(receivedBestPositions+i,receivedBestPositions+i+dimensions);
+
+                double cCost;
+
+                if ((cCost = config->computeCostFunctionValue(positionVectors)) <
+                    globalBestPosCost) {
+                    globalBestPosCost = cCost;
+                    computedGlobalBestPosition = receivedBestPositions + i;
+                }
+            }
+            // Compute stop criterion
+            if (globalBestPosCost < stopCriterionValue)
+                stop = true;
         }
 
         // Broadcast global best position
-        MPI_Bcast((void *)computedGlobalBestPosition, dimensions, MPI_DOUBLE, ROOT,
+        MPI_Bcast((void *) computedGlobalBestPosition, dimensions, MPI_DOUBLE, ROOT,
                   MPI_COMM_WORLD);
+
+        for (psoParticle *ps : particles) {
+            ps->globalBestPosition=computedGlobalBestPosition;
+
+        }
 
         // Update best position
         //printf("[%d] New best position [0] = %lf\n", processRank, computedGlobalBestPosition[0]);
 
-        // Compute stop criterion
-        if (config->computeCostFunctionValue(computedGlobalBestPosition) < stopCriterion)
-            stop = true;
+
 
         iteration++;
 
