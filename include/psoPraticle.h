@@ -29,6 +29,8 @@ public:
     void computePosition(std::default_random_engine *gen);
     void computeSpeed(std::default_random_engine *gen);
     double *globalBestPosition ;
+    double getCoefficientForBoundedPosition(std::vector<double> &newPositionVector,
+                                                         std::vector<double> &tempSpeedVectors);
 
 protected:
 

@@ -1,6 +1,7 @@
 #include "../include/pso.h"
 #include "../include/psoPraticle.h"
-
+#include <algorithm>
+#include <iterator>
 #include <stdio.h>
 #include <mpi.h>
 #include <vector>
@@ -19,22 +20,24 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
         particle->setStartPosition(rand_engine);
         particle->setStartSpeed(rand_engine);
         particle->computeCostFunctionValue();
-        printf("[%d] current cost %f, start\n", processRank, particle->getCostFunctionValue());
+       // printf("[%d] current cost %f, start\n", processRank, particle->getCostFunctionValue());
         particles[i] = particle;
     }
     localBestParticle = particles[0];
-
+    double *computedGlobalBestPosition=new double[dimensions];
+    //computedGlobalBestPosition = receivedBestPositions[0];
+    double globalBestPosCost = DBL_MAX;
     while (!stop) {
         // Compute new positions (S)
         //wylicz nowa pozycje dka watku
+        printf("%d_%d", iteration, processRank);
         for (psoParticle *ps : particles) {
             ps->computePosition(&rand_engine);
             ps->computeCostFunctionValue();
             if (ps->getCostFunctionValue() < localBestParticle->getCostFunctionValue()) {
                 localBestParticle = ps;
             }
-            printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
-
+           // printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
         }
 
         double *localBestPosition = new double[dimensions];
@@ -62,9 +65,7 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
 
 
 
-        double *computedGlobalBestPosition;
-        //computedGlobalBestPosition = receivedBestPositions[0];
-        double globalBestPosCost = DBL_MAX;
+
         if (processRank == ROOT) {
             for (int i = 0; i < numberOfProcesses * dimensions; i = i + dimensions) {
                 std::vector<double> positionVectors(receivedBestPositions+i,receivedBestPositions+i+dimensions);
@@ -74,14 +75,19 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
                 if ((cCost = config->computeCostFunctionValue(positionVectors)) <
                     globalBestPosCost) {
                     globalBestPosCost = cCost;
-                    computedGlobalBestPosition = receivedBestPositions + i;
+                    std::copy_n(receivedBestPositions + i, dimensions, computedGlobalBestPosition);
                 }
                // printf("[%d] current cost %f, iteration %d\n", processRank, cCost, iteration);
             }
             // Compute stop criterion
             if (globalBestPosCost < stopCriterionValue)
                 stop = true;
-            printf("[%d] current global best pos cost %f, iteration %d\n", processRank, globalBestPosCost, iteration);
+            //printf("[%d] current global best pos cost %f, iteration %d\n", processRank, globalBestPosCost, iteration);
+            printf("%d_%d", iteration, processRank);
+            for (int i =0; i < dimensions; i++) {
+                printf("_%d", computedGlobalBestPosition);
+            }
+            printf("_%d\n", globalBestPosCost);
         }
 
         // Broadcast global best position
