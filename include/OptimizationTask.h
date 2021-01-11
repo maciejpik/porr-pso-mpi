@@ -9,4 +9,9 @@ public:
     virtual ~OptimizationTask() = default;
 
     virtual double computeCost(std::vector<double> &position) = 0;
+
+    int getTaskId() {return taskId;}
+
+protected:
+    int taskId;
 };

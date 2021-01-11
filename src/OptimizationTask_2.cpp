@@ -4,7 +4,10 @@
 #include <math.h>
 
 OptimizationTask_2::OptimizationTask_2()
-    : OptimizationTask() {}
+    : OptimizationTask()
+{
+    taskId = 2;
+}
 
 double OptimizationTask_2::computeCost(std::vector<double> &position)
 {

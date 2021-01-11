@@ -148,8 +148,8 @@ void Mc::solve()
     if(settings->getLogger())
     {
         fclose(logFile);
-        sprintf(filename, "particlesLog_p%d_%d_%d_%lf_mc_2_a_MPI.txt", settings->getProcessRank(), iteration, settings->getDimensions(),
-            settings->getStopCriterion());
+        sprintf(filename, "particlesLog_p%d_%d_%d_%lf_mc_%d_a_MPI.txt", settings->getProcessRank(), iteration, settings->getDimensions(),
+            settings->getStopCriterion(), settings->getTask()->getTaskId());
         rename(tempFilename, filename);
     }
 }
