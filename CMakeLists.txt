@@ -6,8 +6,11 @@ find_package(MPI REQUIRED)
 
 add_executable(PORR_MPI main.cpp
     include/Settings.h src/Settings.cpp
-    include/utils.h src/utils.cpp
-    include/pso.h src/pso.cpp
-    include/monteCarlo.h src/monteCarlo.cpp)
+    include/Utils.h src/Utils.cpp
+    include/Particle.h src/Particle.cpp
+    include/OptimizationTask.h src/OptimizationTask.cpp
+    include/OptimizationTask_1.h src/OptimizationTask_1.cpp
+    include/McParticle.h src/McParticle.cpp
+    include/Mc.h src/Mc.cpp)
 
 target_link_libraries(PORR_MPI PRIVATE MPI::MPI_C)

@@ -1,8 +1,10 @@
 #include "../include/Settings.h"
-#include "../include/utils.h"
+#include "../include/Utils.h"
+#include "../include/OptimizationTask_1.h"
 
 #include <mpi.h>
 #include <stdio.h>
+#include <time.h>
 
 Settings::Settings(int argc, char* argv[])
 {
@@ -23,6 +25,17 @@ Settings::Settings(int argc, char* argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &numberOfProcesses);
 
     computeLocalParticlesNumber();
+
+    initializationConstraints = {-40, 40};
+    solutionConstraints = {-40, 40};
+
+    randomEngine.seed((processRank + 1) * time(NULL));
+
+    task = new OptimizationTask_1();
+
+    mc = {.01, .01};
+    stopCriterion = 0.01;
+    verbose = true;
 }
 
 void Settings::computeLocalParticlesNumber()

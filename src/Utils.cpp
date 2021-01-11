@@ -1,4 +1,4 @@
-#include "../include/utils.h"
+#include "../include/Utils.h"
 
 int getGlobalParticleId(int processRank, int numberOfProcesses, int particlesNumber, int localIndex)
 {
