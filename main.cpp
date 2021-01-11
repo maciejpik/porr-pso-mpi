@@ -21,7 +21,8 @@ int main(int argc, char *argv[])
     sscanf(argv[1], "%d", &particlesNumber);
     sscanf(argv[2], "%d", &dimensions);
     sscanf(argv[3], "%f", &stopCriterion);
-    config=new ConfigEx2();
+
+    config=new ConfigEx1();
     MPI_Init(&argc, &argv);
 
     int processRank, numberOfProcesses;
@@ -36,7 +37,6 @@ int main(int argc, char *argv[])
     }
 
     int localParticlesNumber = getLocalParticlesNumber(processRank, numberOfProcesses, particlesNumber);
-    printf("[%d] I will compute %d particles\n", processRank, localParticlesNumber);
 
     // for(int i = 0; i < localParticlesNumber; i++)
     // {

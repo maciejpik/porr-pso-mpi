@@ -38,9 +38,9 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
     //computedGlobalBestPosition = receivedBestPositions[0];
     double globalBestPosCost = DBL_MAX;
     while (!stop) {
+
         // Compute new positions (S)
-        //wylicz nowa pozycje dka watku
-        printf("%d_%d\n", iteration, processRank);
+        //printf("%d_%d\n", iteration, processRank);
         for (psoParticle *ps : particles) {
             ps->computePosition(&rand_engine);
             ps->computeCostFunctionValue();
@@ -54,19 +54,13 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
                         tempPosition[0], tempPosition[1], ps->getCostFunctionValue());
             }
 
-           // printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
+           //printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
         }
 
         double *localBestPosition = new double[dimensions];
         for (int i = 0; i < dimensions; i++) {
             localBestPosition[i] = localBestParticle->getPositionVector()[i];
         }
-
-
-/*        //wypisz tu najlepsza pozycje localna
-        localBestPosition[0] = processRank;
-        for (int i = 1; i < dimensions; i++)
-            localBestPosition[i] = 0;
         // Compute new positions (E)*/
 
         // Receive local best positions (S)
