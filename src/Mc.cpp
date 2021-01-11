@@ -28,6 +28,14 @@ void Mc::solve()
     McParticle* localBestParticle = particles[0];
     std::vector<double> localBestPosition(settings->getDimensions());
 
+    FILE* logFile;
+    char tempFilename[100], filename[100];
+    if(settings->getLogger())
+    {
+        sprintf(tempFilename, "temp_logFile_%d.txt", settings->getProcessRank());
+        logFile = fopen(tempFilename, "w");
+    }
+
     while (!stop)
     {
         // Compute new positions
@@ -36,6 +44,13 @@ void Mc::solve()
             particles[i]->updatePosition();
             if(particles[i]->getCost() < localBestParticle->getCost())
                 localBestParticle = particles[i];
+
+            if(settings->getLogger() && settings->getDimensions() == 2)
+            {
+                std::vector<double> tempPosition = particles[i]->getPosition();
+                fprintf(logFile, "%d_%d_%lf_%lf_%lf\n", iteration, particles[i]->getId(),
+                    tempPosition[0], tempPosition[1], particles[i]->getCost());
+            }
         }
 
         if(settings->getProcessRank() == settings->getRoot())
@@ -87,7 +102,6 @@ void Mc::solve()
                     MPI_Send(&iteration, 1, MPI_INT, dest, communicationType::STOP, MPI_COMM_WORLD);
                 }
                 delete potentialSolution;
-                break;
             }
         }
         else
@@ -101,7 +115,6 @@ void Mc::solve()
 
                 MPI_Send(&localBestPosition[0], settings->getDimensions(), MPI_DOUBLE, settings->getRoot(),
                     communicationType::BEST_SOLUTION, MPI_COMM_WORLD);
-                break;
             }
 
             // Check if solution is already foun by other process
@@ -111,15 +124,16 @@ void Mc::solve()
                 &stopMessageStatus);
             if (stopReceived)
             {
+                stop = true;
                 int stopMessage;
                 MPI_Recv(&stopMessage, 1, MPI_INT, settings->getRoot(), communicationType::STOP,
                     MPI_COMM_WORLD, &stopMessageStatus);
-                break;
             }
         }
         
         iteration++;
     }
+    iteration--;
 
     if(settings->getProcessRank() == settings->getRoot())
     {
@@ -129,5 +143,13 @@ void Mc::solve()
         double cost = settings->getTask()->computeCost(localBestPosition);
         printf("[%d] Solution %lf from process rank %d (%.6lf s)\n", settings->getProcessRank(), cost,
             solutionSource, duration / 1000000.);
+    }
+
+    if(settings->getLogger())
+    {
+        fclose(logFile);
+        sprintf(filename, "particlesLog_p%d_%d_%d_%lf_mc_2_a_MPI.txt", settings->getProcessRank(), iteration, settings->getDimensions(),
+            settings->getStopCriterion());
+        rename(tempFilename, filename);
     }
 }

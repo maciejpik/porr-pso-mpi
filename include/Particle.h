@@ -14,6 +14,7 @@ public:
 
     double getCost() {return cost;}
     std::vector<double> getPosition() {return position;}
+    int getId() {return id;}
 
 protected:
     std::vector<double> position;

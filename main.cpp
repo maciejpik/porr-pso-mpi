@@ -10,7 +10,8 @@ int main(int argc, char *argv[])
     MPI_Init(&argc, &argv);
     Settings* settings = new Settings(argc, argv);
     
-    settings->setVerbose(false);
+    settings->setVerbose(true);
+    settings->setLogger(true);
 
     if (settings->getProcessRank() == settings->getRoot())
     {

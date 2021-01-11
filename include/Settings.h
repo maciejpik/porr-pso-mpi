@@ -41,8 +41,10 @@ public:
     mcConstants getMcConstants() {return mc;}
     double getStopCriterion() {return stopCriterion;}
     bool getVerbose() {return verbose;}
+    bool getLogger() {return logger;}
 
     void setVerbose(bool v) {verbose = v;}
+    void setLogger(bool l) {logger = l;}
 
 private:
     int root;
@@ -58,6 +60,7 @@ private:
     mcConstants mc;
     double stopCriterion;
     bool verbose;
+    bool logger;
 
     void computeLocalParticlesNumber();
 };

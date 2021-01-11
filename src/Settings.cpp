@@ -33,9 +33,10 @@ Settings::Settings(int argc, char* argv[])
 
     task = new OptimizationTask_1();
 
-    mc = {.01, .01};
+    mc = {2, .001};
     stopCriterion = 0.01;
     verbose = true;
+    logger = false;
 }
 
 void Settings::computeLocalParticlesNumber()
