@@ -10,6 +10,7 @@ add_executable(PORR_MPI main.cpp
     include/Particle.h src/Particle.cpp
     include/OptimizationTask.h src/OptimizationTask.cpp
     include/OptimizationTask_1.h src/OptimizationTask_1.cpp
+    include/OptimizationTask_2.h src/OptimizationTask_2.cpp
     include/McParticle.h src/McParticle.cpp
     include/Mc.h src/Mc.cpp)
 
