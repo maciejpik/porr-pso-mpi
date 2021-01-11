@@ -7,8 +7,12 @@
 #include <vector>
 #include <float.h>
 #include <string.h>
+#include <chrono>
 
 void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config, bool doLog) {
+
+    auto tStart = std::chrono::high_resolution_clock::now();
+
     bool stop = false;
     int iteration = 1;
     std::vector<psoParticle *> particles;
@@ -18,23 +22,22 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
     rand_engine.seed(time(NULL));
     for (int i = 0; i < numberOfParticles / numberOfProcesses; i++) {
         std::string idPart = std::to_string(processRank) + std::to_string(i);
-        psoParticle *particle = new psoParticle(dimensions,config, idPart);
+        psoParticle *particle = new psoParticle(dimensions, config, idPart);
         particle->setStartPosition(rand_engine);
         particle->setStartSpeed(rand_engine);
         particle->computeCostFunctionValue();
-       // printf("[%d] current cost %f, start\n", processRank, particle->getCostFunctionValue());
+        printf("[%d] current cost %f, start\n", processRank, particle->getCostFunctionValue());
         particles[i] = particle;
     }
-    FILE* logFile;
+    FILE *logFile;
     char tempFilename[100], filename[100];
-    if(doLog)
-    {
+    if (doLog) {
         sprintf(tempFilename, "temp_logFile_%d.txt", processRank);
         logFile = fopen(tempFilename, "w");
     }
 
     localBestParticle = particles[0];
-    double *computedGlobalBestPosition=new double[dimensions];
+    double *computedGlobalBestPosition = new double[dimensions];
     //computedGlobalBestPosition = receivedBestPositions[0];
     double globalBestPosCost = DBL_MAX;
     while (!stop) {
@@ -47,14 +50,13 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
             if (ps->getCostFunctionValue() < localBestParticle->getCostFunctionValue()) {
                 localBestParticle = ps;
             }
-            if(doLog && dimensions>=2)
-            {
+            if (doLog && dimensions >= 2) {
                 std::vector<double> tempPosition = ps->getPositionVector();
                 fprintf(logFile, "%d_%s_%lf_%lf_%lf\n", iteration, ps->getId().c_str(),
                         tempPosition[0], tempPosition[1], ps->getCostFunctionValue());
             }
 
-           //printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
+            //printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
         }
 
         double *localBestPosition = new double[dimensions];
@@ -79,7 +81,7 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
 
         if (processRank == ROOT) {
             for (int i = 0; i < numberOfProcesses * dimensions; i = i + dimensions) {
-                std::vector<double> positionVectors(receivedBestPositions+i,receivedBestPositions+i+dimensions);
+                std::vector<double> positionVectors(receivedBestPositions + i, receivedBestPositions + i + dimensions);
 
                 double cCost;
 
@@ -88,13 +90,13 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
                     globalBestPosCost = cCost;
                     std::copy_n(receivedBestPositions + i, dimensions, computedGlobalBestPosition);
                 }
-               // printf("[%d] current cost %f, iteration %d\n", processRank, cCost, iteration);
+                // printf("[%d] current cost %f, iteration %d\n", processRank, cCost, iteration);
             }
             // Compute stop criterion
             if (globalBestPosCost < stopCriterionValue)
                 stop = true;
             //printf("[%d] current global best pos cost %f, iteration %d\n", processRank, globalBestPosCost, iteration);
-            for (int i =0; i < dimensions; i++) {
+            for (int i = 0; i < dimensions; i++) {
             }
         }
 
@@ -104,7 +106,7 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
         MPI_Bcast((void *) &stop, 1, MPI_CXX_BOOL, ROOT,
                   MPI_COMM_WORLD);
         for (psoParticle *ps : particles) {
-            ps->globalBestPosition=computedGlobalBestPosition;
+            ps->globalBestPosition = computedGlobalBestPosition;
 
         }
 
@@ -116,13 +118,18 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
         iteration++;
 
         // Clean just to allocate again in next iteration
-        delete localBestPosition, receivedBestPositions, computedGlobalBestPosition;
+        delete localBestPosition, receivedBestPositions;
         MPI_Barrier(MPI_COMM_WORLD);
     }
 
     iteration--;
-    if (processRank == ROOT)
-        printf("[%d] Found solution after %d iterations\n", processRank, iteration);
+    if (processRank == ROOT) {
+    auto tEnd = std::chrono::high_resolution_clock::now();
+    long long int duration = std::chrono::duration_cast<std::chrono::microseconds>(tEnd - tStart).count();
+
+        printf("[%d] Solution %lf (%.6lf s)\n", processRank, globalBestPosCost,
+                duration / 1000000.);
+    }
 
     if(doLog)
     {
