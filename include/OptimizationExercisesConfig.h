@@ -14,6 +14,7 @@ public:
     virtual double computeCostFunctionValue(std::vector<double> positionVector) = 0;
     virtual bool isXInRange(double position);
     virtual bool isPositionInRange(std::vector<double> positionVector);
+    int taskNumber;
 
     double lowerLimitPositionVector;
     double upperLimitPositionVector;

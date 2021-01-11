@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     sscanf(argv[1], "%d", &particlesNumber);
     sscanf(argv[2], "%d", &dimensions);
     sscanf(argv[3], "%f", &stopCriterion);
-    config=new ConfigEx1();
+    config=new ConfigEx2();
     MPI_Init(&argc, &argv);
 
     int processRank, numberOfProcesses;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    runPso(dimensions, processRank, numberOfProcesses, particlesNumber, stopCriterion,config);
+    runPso(dimensions, processRank, numberOfProcesses, particlesNumber, stopCriterion,config, true);
     //runMonteCarlo(dimensions, processRank, numberOfProcesses);
 
     MPI_Finalize();

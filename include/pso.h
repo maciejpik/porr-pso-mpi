@@ -10,7 +10,7 @@
 #include "psoPraticle.h"
 #include "OptimizationExercisesConfig.h"
 
-void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config);
+void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config, bool doLog);
 
 
 

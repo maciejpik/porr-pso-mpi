@@ -9,7 +9,8 @@
 #include <vector>
 
 
-psoParticle::psoParticle(int dim,OptimizationExercisesConfig* config) {
+psoParticle::psoParticle(int dim,OptimizationExercisesConfig* config, std::string idP) {
+    id=idP;
     dimensions = dim;
     globalBestPosition=new double[dim];
     w = 0.72984;
@@ -26,6 +27,10 @@ psoParticle::psoParticle(int dim,OptimizationExercisesConfig* config) {
 
 psoParticle::~psoParticle(){
     delete[] globalBestPosition;
+}
+
+std::string psoParticle::getId() {
+    return id;
 }
 
 void psoParticle::setStartPosition(std::default_random_engine &gen)

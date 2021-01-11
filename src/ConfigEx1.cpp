@@ -8,7 +8,9 @@
 
 #include <math.h>
 
-ConfigEx1::ConfigEx1() : OptimizationExercisesConfig() {}
+ConfigEx1::ConfigEx1() : OptimizationExercisesConfig() {
+    taskNumber=1;
+}
 
 ConfigEx1::~ConfigEx1() {}
 

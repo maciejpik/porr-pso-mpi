@@ -15,9 +15,10 @@
 class psoParticle
 {
 public:
-    psoParticle(int dim,OptimizationExercisesConfig* config);
+    psoParticle(int dim,OptimizationExercisesConfig* config, std::string idP);
     virtual ~psoParticle();
 
+    std::string getId();
     void setStartPosition(std::default_random_engine &gen);
     void setStartSpeed(std::default_random_engine &gen);
     void computeCostFunctionValue();
@@ -34,6 +35,7 @@ public:
 
 protected:
 
+    std::string id;
     int dimensions;
     double w, c1, c2;
     std::vector<double> positionVectors;

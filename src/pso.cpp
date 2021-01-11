@@ -6,8 +6,9 @@
 #include <mpi.h>
 #include <vector>
 #include <float.h>
+#include <string.h>
 
-void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config) {
+void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config, bool doLog) {
     bool stop = false;
     int iteration = 1;
     std::vector<psoParticle *> particles;
@@ -16,13 +17,22 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
     particles.resize(numberOfParticles / numberOfProcesses);
     rand_engine.seed(time(NULL));
     for (int i = 0; i < numberOfParticles / numberOfProcesses; i++) {
-        psoParticle *particle = new psoParticle(dimensions,config);
+        std::string idPart = std::to_string(processRank) + std::to_string(i);
+        psoParticle *particle = new psoParticle(dimensions,config, idPart);
         particle->setStartPosition(rand_engine);
         particle->setStartSpeed(rand_engine);
         particle->computeCostFunctionValue();
        // printf("[%d] current cost %f, start\n", processRank, particle->getCostFunctionValue());
         particles[i] = particle;
     }
+    FILE* logFile;
+    char tempFilename[100], filename[100];
+    if(doLog)
+    {
+        sprintf(tempFilename, "temp_logFile_%d.txt", processRank);
+        logFile = fopen(tempFilename, "w");
+    }
+
     localBestParticle = particles[0];
     double *computedGlobalBestPosition=new double[dimensions];
     //computedGlobalBestPosition = receivedBestPositions[0];
@@ -30,13 +40,20 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
     while (!stop) {
         // Compute new positions (S)
         //wylicz nowa pozycje dka watku
-        printf("%d_%d", iteration, processRank);
+        printf("%d_%d\n", iteration, processRank);
         for (psoParticle *ps : particles) {
             ps->computePosition(&rand_engine);
             ps->computeCostFunctionValue();
             if (ps->getCostFunctionValue() < localBestParticle->getCostFunctionValue()) {
                 localBestParticle = ps;
             }
+            if(doLog && dimensions>=2)
+            {
+                std::vector<double> tempPosition = ps->getPositionVector();
+                fprintf(logFile, "%d_%s_%lf_%lf_%lf\n", iteration, ps->getId().c_str(),
+                        tempPosition[0], tempPosition[1], ps->getCostFunctionValue());
+            }
+
            // printf("[%d] current cost %f, iteration %d\n", processRank, ps->getCostFunctionValue(), iteration);
         }
 
@@ -83,17 +100,15 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
             if (globalBestPosCost < stopCriterionValue)
                 stop = true;
             //printf("[%d] current global best pos cost %f, iteration %d\n", processRank, globalBestPosCost, iteration);
-            printf("%d_%d", iteration, processRank);
             for (int i =0; i < dimensions; i++) {
-                printf("_%d", computedGlobalBestPosition);
             }
-            printf("_%d\n", globalBestPosCost);
         }
 
         // Broadcast global best position
         MPI_Bcast((void *) computedGlobalBestPosition, dimensions, MPI_DOUBLE, ROOT,
                   MPI_COMM_WORLD);
-
+        MPI_Bcast((void *) &stop, 1, MPI_CXX_BOOL, ROOT,
+                  MPI_COMM_WORLD);
         for (psoParticle *ps : particles) {
             ps->globalBestPosition=computedGlobalBestPosition;
 
@@ -114,4 +129,12 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
     iteration--;
     if (processRank == ROOT)
         printf("[%d] Found solution after %d iterations\n", processRank, iteration);
+
+    if(doLog)
+    {
+        fclose(logFile);
+        sprintf(filename, "particlesLog_p%d_%d_%d_academic_pso_%d_a_MPI.txt", processRank, iteration, dimensions,
+                 config->taskNumber);
+        rename(tempFilename, filename);
+    }
 }
