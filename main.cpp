@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     sscanf(argv[2], "%d", &dimensions);
     sscanf(argv[3], "%f", &stopCriterion);
 
-    config=new ConfigEx1();
+    config=new ConfigEx2();
     MPI_Init(&argc, &argv);
 
     int processRank, numberOfProcesses;

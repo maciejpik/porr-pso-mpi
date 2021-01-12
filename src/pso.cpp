@@ -9,17 +9,25 @@
 #include <string.h>
 #include <chrono>
 
-void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue, OptimizationExercisesConfig* config, bool doLog) {
+void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOfParticles, float stopCriterionValue,
+            OptimizationExercisesConfig *config, bool doLog) {
 
     auto tStart = std::chrono::high_resolution_clock::now();
 
+    double *globalBestPositionFromAll = new double[dimensions];
+
     bool stop = false;
     int iteration = 1;
+
     std::vector<psoParticle *> particles;
     std::default_random_engine rand_engine;
     psoParticle *localBestParticle;
-    particles.resize(numberOfParticles / numberOfProcesses);
+    int localParticlesNumber = numberOfParticles / numberOfProcesses;
+    if (processRank < numberOfParticles % numberOfProcesses)
+        localParticlesNumber++;
+    particles.resize(localParticlesNumber);
     rand_engine.seed(time(NULL));
+
     for (int i = 0; i < numberOfParticles / numberOfProcesses; i++) {
         std::string idPart = std::to_string(processRank) + std::to_string(i);
         psoParticle *particle = new psoParticle(dimensions, config, idPart);
@@ -103,6 +111,7 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
         // Broadcast global best position
         MPI_Bcast((void *) computedGlobalBestPosition, dimensions, MPI_DOUBLE, ROOT,
                   MPI_COMM_WORLD);
+
         MPI_Bcast((void *) &stop, 1, MPI_CXX_BOOL, ROOT,
                   MPI_COMM_WORLD);
         for (psoParticle *ps : particles) {
@@ -124,18 +133,17 @@ void runPso(int dimensions, int processRank, int numberOfProcesses, int numberOf
 
     iteration--;
     if (processRank == ROOT) {
-    auto tEnd = std::chrono::high_resolution_clock::now();
-    long long int duration = std::chrono::duration_cast<std::chrono::microseconds>(tEnd - tStart).count();
+        auto tEnd = std::chrono::high_resolution_clock::now();
+        long long int duration = std::chrono::duration_cast<std::chrono::microseconds>(tEnd - tStart).count();
 
         printf("[%d] Solution %lf (%.6lf s)\n", processRank, globalBestPosCost,
-                duration / 1000000.);
+               duration / 1000000.);
     }
 
-    if(doLog)
-    {
+    if (doLog) {
         fclose(logFile);
         sprintf(filename, "particlesLog_p%d_%d_%d_academic_pso_%d_a_MPI.txt", processRank, iteration, dimensions,
-                 config->taskNumber);
+                config->taskNumber);
         rename(tempFilename, filename);
     }
 }

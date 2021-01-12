@@ -7,7 +7,7 @@
 #include "../include/PositionVectorOperator.h"
 #include <random>
 #include <vector>
-
+#include <iostream>
 
 psoParticle::psoParticle(int dim,OptimizationExercisesConfig* config, std::string idP) {
     id=idP;
@@ -40,6 +40,7 @@ void psoParticle::setStartPosition(std::default_random_engine &gen)
     for (int i = 0; i < dimensions; i++)
     {
         positionVectors[i] = unif(gen);
+        std::cout<<positionVectors[i]<<"\n";
         positionVectorsParticlePbest[i] = positionVectors[i];
         globalBestPosition[i] = positionVectors[i];
     }
