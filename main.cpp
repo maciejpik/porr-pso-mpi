@@ -11,9 +11,9 @@ int main(int argc, char *argv[])
     Settings* settings = new Settings(argc, argv);
     
     settings->setVerbose(true);
-    settings->setLogger(true);
+    settings->setLogger(false);
 
-    if (settings->getProcessRank() == settings->getRoot())
+    if (settings->getProcessRank() == settings->getRoot() && settings->getVerbose())
     {
         printf("[%d] Number of processes is %d\n", settings->getProcessRank(), settings->getNumberOfProcesses());
         printf("[%d] Total %d particles with %d dimensions\n", settings->getProcessRank(), settings->getParticlesNumber(),

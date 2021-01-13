@@ -1,6 +1,7 @@
 #include "../include/Settings.h"
 #include "../include/Utils.h"
 #include "../include/OptimizationTask_1.h"
+#include "../include/OptimizationTask_2.h"
 
 #include <mpi.h>
 #include <stdio.h>
@@ -31,7 +32,7 @@ Settings::Settings(int argc, char* argv[])
 
     randomEngine.seed((processRank + 1) * time(NULL));
 
-    task = new OptimizationTask_1();
+    task = new OptimizationTask_2();
 
     mc = {2, .001};
     stopCriterion = 0.01;
